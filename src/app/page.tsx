@@ -1,69 +1,197 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import ShowAutocomplete from "@/components/ShowAutocomplete";
+import ProfileCard from "@/components/ProfileCard";
+import { track } from "@/lib/track";
+import { Recommendation, ShowSummary, ViewerProfile } from "@/lib/types";
+
+interface FavoriteSlot {
+  id: number;
+  query: string;
+  selected: ShowSummary | null;
+}
+
+function newFavoriteSlots(): FavoriteSlot[] {
+  return Array.from({ length: 5 }, (_, i) => ({ id: i, query: "", selected: null }));
+}
 
 export default function Home() {
+  const [query, setQuery] = useState("");
+  const [selectedShow, setSelectedShow] = useState<ShowSummary | null>(null);
+  const [submittedShow, setSubmittedShow] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+  const [recsError, setRecsError] = useState<string | null>(null);
+
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [favorites, setFavorites] = useState<FavoriteSlot[]>(newFavoriteSlots());
+  const [profile, setProfile] = useState<ViewerProfile | null>(null);
+  const [profileTitles, setProfileTitles] = useState<string[]>([]);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  useEffect(() => {
+    track("landed");
+  }, []);
+
+  async function handleSubmitShow(e: React.FormEvent) {
+    e.preventDefault();
+    const show = selectedShow?.title ?? query.trim();
+    if (!show) return;
+
+    setSubmittedShow(show);
+    setRecommendations(null);
+    setRecsError(null);
+    setLoadingRecs(true);
+    track("submitted_show", { show });
+
+    try {
+      const res = await fetch("/api/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ show }),
+      });
+      if (!res.ok) throw new Error("request failed");
+      const data = await res.json();
+      setRecommendations(data.recommendations);
+      track("saw_results", { show, count: data.recommendations?.length ?? 0 });
+    } catch {
+      setRecsError("Something went wrong generating recommendations. Try again.");
+    } finally {
+      setLoadingRecs(false);
+    }
+  }
+
+  function handleClickFavoritesPrompt() {
+    track("clicked_favorites_prompt");
+    setFavoritesOpen(true);
+  }
+
+  function updateFavoriteSlot(id: number, patch: Partial<FavoriteSlot>) {
+    setFavorites((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  }
+
+  async function handleSubmitFavorites(e: React.FormEvent) {
+    e.preventDefault();
+    const titles = favorites
+      .map((f) => f.selected?.title ?? f.query.trim())
+      .filter((t) => t.length > 0);
+    if (titles.length === 0) return;
+
+    setProfile(null);
+    setProfileError(null);
+    setLoadingProfile(true);
+    track("submitted_favorites", { count: titles.length });
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shows: titles }),
+      });
+      if (!res.ok) throw new Error("request failed");
+      const data = await res.json();
+      setProfile(data);
+      setProfileTitles(titles);
+      track("saw_profile", { archetype: data.archetype });
+    } catch {
+      setProfileError("Something went wrong generating your profile. Try again.");
+    } finally {
+      setLoadingProfile(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
+      <h1 className="text-2xl font-bold">What Next</h1>
+      <p className="mt-1 text-sm text-gray-600">
+        Tell us the show you just finished. We&apos;ll figure out what you&apos;ll miss about it.
+      </p>
+
+      <form onSubmit={handleSubmitShow} className="mt-6 flex gap-2">
+        <div className="flex-1">
+          <ShowAutocomplete
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              setSelectedShow(null);
+            }}
+            onSelect={(show) => {
+              setSelectedShow(show);
+              setQuery(show.title);
+            }}
+            onFirstType={() => track("started_typing")}
+            placeholder="e.g. The Wire"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <button
+          type="submit"
+          disabled={loadingRecs || !query.trim()}
+          className="border border-black bg-black px-4 py-2 text-white disabled:opacity-40"
+        >
+          {loadingRecs ? "Thinking…" : "Submit"}
+        </button>
+      </form>
+
+      {recsError && <p className="mt-4 text-sm text-red-600">{recsError}</p>}
+
+      {submittedShow && recommendations && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold">
+            Because you finished <em>{submittedShow}</em>
+          </h2>
+          <ul className="mt-4 flex flex-col gap-4">
+            {recommendations.map((rec, i) => (
+              <li key={i} className="border border-gray-300 p-4">
+                <p className="text-sm text-gray-700">
+                  {rec.angle}, try <strong>{rec.title}</strong>.
+                </p>
+                <p className="mt-1 text-sm text-gray-500">{rec.reason}</p>
+              </li>
+            ))}
+          </ul>
+
+          {!favoritesOpen && (
+            <button
+              type="button"
+              onClick={handleClickFavoritesPrompt}
+              className="mt-6 border border-gray-400 px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Add up to 5 all-time favorites to see your viewer profile
+            </button>
+          )}
+
+          {favoritesOpen && !profile && (
+            <form onSubmit={handleSubmitFavorites} className="mt-6 border border-gray-300 p-4">
+              <p className="text-sm font-medium">Your all-time favorite shows</p>
+              <div className="mt-3 flex flex-col gap-2">
+                {favorites.map((slot) => (
+                  <ShowAutocomplete
+                    key={slot.id}
+                    value={slot.query}
+                    onChange={(v) => updateFavoriteSlot(slot.id, { query: v, selected: null })}
+                    onSelect={(show) =>
+                      updateFavoriteSlot(slot.id, { selected: show, query: show.title })
+                    }
+                    placeholder={`Favorite #${slot.id + 1} (optional)`}
+                  />
+                ))}
+              </div>
+              <button
+                type="submit"
+                disabled={loadingProfile || favorites.every((f) => !f.query.trim())}
+                className="mt-4 border border-black bg-black px-4 py-2 text-sm text-white disabled:opacity-40"
+              >
+                {loadingProfile ? "Building your profile…" : "See my viewer profile"}
+              </button>
+              {profileError && <p className="mt-2 text-sm text-red-600">{profileError}</p>}
+            </form>
+          )}
+
+          {profile && <ProfileCard profile={profile} basedOn={profileTitles} />}
+        </section>
+      )}
     </div>
   );
 }
