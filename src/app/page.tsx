@@ -46,6 +46,7 @@ export default function Home() {
     setLoadingRecs(true);
     track("submitted_show", { show });
 
+    const startedAt = performance.now();
     try {
       const res = await fetch("/api/recommend", {
         method: "POST",
@@ -54,8 +55,13 @@ export default function Home() {
       });
       if (!res.ok) throw new Error("request failed");
       const data = await res.json();
+      const latencyMs = Math.round(performance.now() - startedAt);
       setRecommendations(data.recommendations);
-      track("saw_results", { show, count: data.recommendations?.length ?? 0 });
+      track("saw_results", {
+        show,
+        count: data.recommendations?.length ?? 0,
+        latencyMs,
+      });
     } catch {
       setRecsError("Something went wrong generating recommendations. Try again.");
     } finally {

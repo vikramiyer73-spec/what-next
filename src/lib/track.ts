@@ -1,4 +1,4 @@
-import { track as vercelTrack } from "@vercel/analytics";
+import posthog from "posthog-js";
 
 export type TrackEvent =
   | "landed"
@@ -12,5 +12,5 @@ export type TrackEvent =
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   console.log(`[track] ${event}`, payload ?? {});
-  vercelTrack(event, payload as Record<string, string | number | boolean | null>);
+  posthog.capture(event, payload);
 }
