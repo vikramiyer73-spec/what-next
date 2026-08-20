@@ -1,3 +1,5 @@
+import { track as vercelTrack } from "@vercel/analytics";
+
 export type TrackEvent =
   | "landed"
   | "started_typing"
@@ -10,4 +12,5 @@ export type TrackEvent =
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   console.log(`[track] ${event}`, payload ?? {});
+  vercelTrack(event, payload as Record<string, string | number | boolean | null>);
 }
