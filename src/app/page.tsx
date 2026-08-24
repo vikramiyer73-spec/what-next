@@ -243,62 +243,64 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
-      <div className="flex items-baseline justify-between">
-        <p className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white">
-          What Next
-        </p>
-        {submittedShow && (
-          <p className="font-barlow text-xs uppercase tracking-[0.15em] text-white/40">
-            You just finished · {submittedShow.title}
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+      <div className="mx-auto max-w-2xl">
+        <div className="flex items-baseline justify-between">
+          <p className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white">
+            What Next
           </p>
-        )}
-      </div>
-
-      {!submittedShow && (
-        <div className="mt-6 text-center">
-          <p className="font-alegreya font-medium text-[20px] leading-snug text-white/90">
-            That emptiness you feel when you finish a great show, and you can&apos;t find anything to
-            fill that gap.
-          </p>
-          <p className="font-alegreya font-medium mt-2 text-[16px] leading-snug text-white/50">
-            We&apos;ll figure out what you missed about that show and what you should watch next
-          </p>
+          {submittedShow && (
+            <p className="font-barlow text-xs uppercase tracking-[0.15em] text-white/40">
+              You just finished · {submittedShow.title}
+            </p>
+          )}
         </div>
-      )}
 
-      <form onSubmit={handleSubmitShow} className="mt-6">
-        <ShowAutocomplete
-          value={query}
-          disabled={loadingRecs}
-          onChange={(v) => {
-            setQuery(v);
-            setSelectedShow(null);
-          }}
-          onSelect={(show) => {
-            setSelectedShow(show);
-            setQuery(show.title);
-          }}
-          onFirstType={() => track("started_typing")}
-          placeholder={loadingRecs ? "Finding your next watch…" : "e.g. The Wire"}
-        />
-        <button
-          type="submit"
-          disabled={loadingRecs || !query.trim()}
-          className="font-barlow mt-3 w-full rounded-full bg-white py-3 text-base font-semibold text-[#1a1626] disabled:opacity-40"
-        >
-          {loadingRecs ? "Finding your next watch…" : "Find my next watch"}
-        </button>
-      </form>
+        {!submittedShow && (
+          <div className="mx-auto mt-6 max-w-xl text-center">
+            <p className="font-alegreya font-medium text-[20px] leading-snug text-white/90">
+              That emptiness you feel when you finish a great show, and you can&apos;t find anything
+              to fill that gap.
+            </p>
+            <p className="font-alegreya font-medium mt-2 text-[16px] leading-snug text-white/50">
+              We&apos;ll figure out what you missed about that show and what you should watch next
+            </p>
+          </div>
+        )}
 
-      {!submittedShow && (
-        <>
-          <ExampleRecommendation />
-          <RecentSearches shows={recentSearches} onSelect={handleClickRecentSearch} />
-        </>
-      )}
+        <form onSubmit={handleSubmitShow} className="mt-6">
+          <ShowAutocomplete
+            value={query}
+            disabled={loadingRecs}
+            onChange={(v) => {
+              setQuery(v);
+              setSelectedShow(null);
+            }}
+            onSelect={(show) => {
+              setSelectedShow(show);
+              setQuery(show.title);
+            }}
+            onFirstType={() => track("started_typing")}
+            placeholder={loadingRecs ? "Finding your next watch…" : "e.g. The Wire"}
+          />
+          <button
+            type="submit"
+            disabled={loadingRecs || !query.trim()}
+            className="font-barlow mt-3 w-full rounded-full bg-white py-3 text-base font-semibold text-[#1a1626] disabled:opacity-40"
+          >
+            {loadingRecs ? "Finding your next watch…" : "Find my next watch"}
+          </button>
+        </form>
 
-      {recsError && <p className="font-barlow mt-4 text-sm text-red-400">{recsError}</p>}
+        {!submittedShow && (
+          <>
+            <ExampleRecommendation />
+            <RecentSearches shows={recentSearches} onSelect={handleClickRecentSearch} />
+          </>
+        )}
+
+        {recsError && <p className="font-barlow mt-4 text-sm text-red-400">{recsError}</p>}
+      </div>
 
       {submittedShow && (recommendations.length > 0 || loadingRecs) && (
         <section className="mt-8">
@@ -318,7 +320,7 @@ export default function Home() {
           )}
 
           {lightProfile && (
-            <div className="mt-4 flex flex-col gap-4">
+            <div className="mx-auto mt-4 flex max-w-2xl flex-col gap-4">
               <LightProfile profile={lightProfile} />
 
               {!profileExpanded && !fullProfile && (

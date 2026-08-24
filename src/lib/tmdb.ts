@@ -1,4 +1,5 @@
 import { ProviderType, ShowSummary, WatchProvider } from "./types";
+import { canonicalProviderBrand } from "./providerColors";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 export const TMDB_POSTER_BASE = "https://image.tmdb.org/t/p/w92";
@@ -159,11 +160,17 @@ export async function getWatchProviders(tmdbId: number): Promise<WatchProvider[]
   const rent: WatchProvider[] = (us.rent ?? []).map(toProvider("rent"));
   const buy: WatchProvider[] = (us.buy ?? []).map(toProvider("buy"));
 
+  // Dedupe by (type, canonical brand) — e.g. "Netflix" and "Netflix Standard
+  // with Ads" are both flatrate offers of the same service, so only the
+  // first-seen variant survives. Scoping by type keeps a genuinely different
+  // offer (e.g. a "buy" listing) from merging with a "flatrate" one that
+  // happens to share a brand name.
   const seen = new Set<string>();
   const ordered: WatchProvider[] = [];
   for (const provider of [...flatrate, ...rent, ...buy]) {
-    if (seen.has(provider.name)) continue;
-    seen.add(provider.name);
+    const key = `${provider.type}:${canonicalProviderBrand(provider.name)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     ordered.push(provider);
   }
   return ordered;

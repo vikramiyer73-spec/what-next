@@ -1,7 +1,9 @@
-export const APP_VERSION = "v6";
+export const APP_VERSION = "v7";
 
 export const APP_VERSION_CHANGES = [
-  "fixed: long show titles no longer overflow into the poster column (fluid clamp() sizing, word-break, wider gutter)",
-  "fixed: wrong poster/art shown for shows whose TMDB entry only exists at the series level with per-season art (e.g. Deutschland 83 showing Deutschland 86's poster)",
-  "TMDB title matching now prefers exact matches and uses a year in the title to disambiguate; logs when a fuzzy match is used",
+  "fixed: mid-word title breaks on long titles were a too-narrow-column artifact, not a wrong CSS property — root cause fixed by widening the layout",
+  "results layout widened (page container + explicit column min-width) so the center column has real room to breathe",
+  "3-column layout now only activates at large-desktop widths (lg breakpoint); tablet gets the roomy single-column layout instead of a cramped 3-column one",
+  "title font size now also scales down for long titles specifically, not just narrow viewports",
+  "provider pills dedupe tier/channel variants of the same service (e.g. Netflix vs Netflix Standard with Ads collapse to one pill)",
 ];

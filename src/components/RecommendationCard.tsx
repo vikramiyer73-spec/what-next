@@ -12,6 +12,15 @@ interface RecommendationCardProps {
   dismissing: boolean;
 }
 
+/**
+ * Long titles ("LAST CHANCE U: BASKETBALL") need a lower ceiling than short
+ * ones ("THE WIRE") so they don't force as much wrapping at the same
+ * viewport width — clamp() alone can't be content-length-aware.
+ */
+function titleFontSize(title: string): string {
+  return title.length > 20 ? "clamp(24px, 3.2vw, 42px)" : "clamp(32px, 4vw, 56px)";
+}
+
 export default function RecommendationCard({ rec, onDismiss, dismissing }: RecommendationCardProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -24,22 +33,22 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
   }
 
   return (
-    <div className="animate-fade-up-in grid grid-cols-[140px_1fr_240px] gap-12 border-b border-white/10 py-10 max-md:grid-cols-1 max-md:gap-4">
+    <div className="animate-fade-up-in grid grid-cols-[140px_minmax(360px,1fr)_240px] gap-12 border-b border-white/10 py-10 max-lg:grid-cols-1 max-lg:gap-4">
       <p
-        className="font-barlow font-medium uppercase tracking-[0.08em] text-[16px] md:text-[24px]"
+        className="font-barlow font-medium uppercase tracking-[0.08em] text-[16px] lg:text-[24px]"
         style={{ color: "#958FB5" }}
       >
         If what you miss is
       </p>
 
       <div className="min-w-0">
-        <p className="font-garamond italic font-medium leading-snug text-white text-[24px] md:text-[38px]">
+        <p className="font-garamond italic font-medium leading-snug text-white text-[24px] lg:text-[38px]">
           {rec.angle}
         </p>
 
         <h3
-          className="font-barlow font-medium uppercase tracking-[0.08em] mt-3 break-words text-[clamp(32px,4vw,56px)] leading-[1.05]"
-          style={{ color: "#E8E4FF" }}
+          className="font-barlow font-medium uppercase tracking-[0.08em] mt-3 leading-[1.05]"
+          style={{ color: "#E8E4FF", fontSize: titleFontSize(rec.title), wordBreak: "normal", overflowWrap: "break-word" }}
         >
           {rec.title}
         </h3>
@@ -85,7 +94,7 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
         )}
       </div>
 
-      <div className="max-md:hidden">
+      <div className="max-lg:hidden">
         {rec.posterPath ? (
           <img
             src={`${TMDB_POSTER_BASE_LARGE}${rec.posterPath}`}
