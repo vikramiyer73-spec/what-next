@@ -24,7 +24,7 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
   }
 
   return (
-    <div className="animate-fade-up-in grid grid-cols-[140px_1fr_240px] gap-8 border-b border-white/10 py-10 max-md:grid-cols-1 max-md:gap-4">
+    <div className="animate-fade-up-in grid grid-cols-[140px_1fr_240px] gap-12 border-b border-white/10 py-10 max-md:grid-cols-1 max-md:gap-4">
       <p
         className="font-barlow font-medium uppercase tracking-[0.08em] text-[16px] md:text-[24px]"
         style={{ color: "#958FB5" }}
@@ -38,7 +38,7 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
         </p>
 
         <h3
-          className="font-barlow font-medium uppercase tracking-[0.08em] mt-3 text-[32px] md:text-[56px] leading-none"
+          className="font-barlow font-medium uppercase tracking-[0.08em] mt-3 break-words text-[clamp(32px,4vw,56px)] leading-[1.05]"
           style={{ color: "#E8E4FF" }}
         >
           {rec.title}

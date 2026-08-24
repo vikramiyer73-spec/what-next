@@ -57,15 +57,66 @@ export interface TMDBMatch {
   overview: string | null;
 }
 
-/** Finds the closest TMDB match for a Claude-recommended title (exact title match preferred). */
+interface TMDBSeasonSummary {
+  name: string;
+  poster_path: string | null;
+}
+
+interface TMDBTVDetailsResponse {
+  seasons?: TMDBSeasonSummary[];
+}
+
+/**
+ * Some shows only exist on TMDB at the series level, with individually-named
+ * seasons underneath (e.g. "Deutschland 83"/"86"/"89" are seasons of the show
+ * "Deutschland") — the series-level poster can default to a different
+ * season's art than the one actually being recommended. When the matched
+ * show's own name isn't what we searched for, check whether a season name
+ * matches instead and prefer that season's poster.
+ */
+async function findSeasonPoster(showId: number, normalizedQuery: string): Promise<string | null> {
+  const apiKey = requireApiKey();
+  const res = await fetch(`${TMDB_BASE_URL}/tv/${showId}?api_key=${apiKey}`);
+  if (!res.ok) return null;
+
+  const data = (await res.json()) as TMDBTVDetailsResponse;
+  const season = data.seasons?.find((s) => s.name.trim().toLowerCase() === normalizedQuery);
+  return season?.poster_path ?? null;
+}
+
+/** Finds the closest TMDB match for a Claude-recommended title. */
 export async function findBestTVMatch(title: string): Promise<TMDBMatch | null> {
   const results = await searchTVShows(title);
   if (results.length === 0) return null;
 
-  const exact = results.find((r) => r.title.toLowerCase() === title.toLowerCase());
-  const best = exact ?? results[0];
+  const normalizedQuery = title.trim().toLowerCase();
+  const yearMatch = title.match(/\b(19|20)\d{2}\b/);
+  const impliedYear = yearMatch ? yearMatch[0] : null;
 
-  return { id: best.id, posterPath: best.posterPath, overview: best.overview || null };
+  const exactMatches = results.filter((r) => r.title.toLowerCase() === normalizedQuery);
+
+  let best: ShowSummary;
+  if (exactMatches.length > 0) {
+    const yearFiltered = impliedYear ? exactMatches.find((r) => r.year === impliedYear) : undefined;
+    best = yearFiltered ?? exactMatches[0];
+  } else {
+    best = results[0];
+    console.warn(
+      `tmdb: fuzzy match for "${title}" -> "${best.title}" (id ${best.id}, no exact title match found)`,
+    );
+  }
+
+  let posterPath = best.posterPath;
+
+  if (best.title.toLowerCase() !== normalizedQuery) {
+    const seasonPoster = await findSeasonPoster(best.id, normalizedQuery);
+    if (seasonPoster) {
+      console.log(`tmdb: used season-level poster for "${title}" under show "${best.title}"`);
+      posterPath = seasonPoster;
+    }
+  }
+
+  return { id: best.id, posterPath, overview: best.overview || null };
 }
 
 interface TMDBWatchProviderEntry {
