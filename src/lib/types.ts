@@ -4,6 +4,14 @@ export interface ShowSummary {
   year: string | null;
   posterPath: string | null;
   overview: string;
+  originCountry: string | null;
+}
+
+export type ProviderType = "flatrate" | "rent" | "buy";
+
+export interface WatchProvider {
+  name: string;
+  type: ProviderType;
 }
 
 export interface Recommendation {
@@ -12,11 +20,21 @@ export interface Recommendation {
   reason: string;
 }
 
-export interface RecommendResponse {
-  recommendations: Recommendation[];
+export interface EnrichedRecommendation extends Recommendation {
+  tmdbId: number | null;
+  posterPath: string | null;
+  overview: string | null;
+  providers: WatchProvider[];
+  providerOverflow: number;
 }
 
 export interface ViewerProfile {
   archetype: string;
   description: string;
+}
+
+export interface FavoriteSlot {
+  id: number;
+  query: string;
+  selected: ShowSummary | null;
 }

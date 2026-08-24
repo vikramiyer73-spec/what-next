@@ -73,40 +73,51 @@ export default function ShowAutocomplete({
         onBlur={() => {
           setTimeout(() => setOpen(false), 150);
         }}
-        className="w-full border border-gray-400 px-3 py-2 text-base disabled:bg-gray-100"
+        className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-base text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none disabled:opacity-50"
       />
       {loading && (
-        <span className="absolute right-3 top-2.5 text-xs text-gray-500">…</span>
+        <span className="absolute right-5 top-3.5 text-xs text-white/40">…</span>
       )}
       {open && value.trim() && results.length > 0 && (
-        <ul className="absolute z-10 mt-1 w-full max-h-72 overflow-y-auto border border-gray-400 bg-white">
-          {results.map((show) => (
-            <li key={show.id}>
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  onSelect(show);
-                  setOpen(false);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-gray-100"
-              >
-                {show.posterPath ? (
-                  <img
-                    src={`${TMDB_POSTER_BASE}${show.posterPath}`}
-                    alt=""
-                    className="h-10 w-7 flex-shrink-0 object-cover"
-                  />
-                ) : (
-                  <span className="h-10 w-7 flex-shrink-0 bg-gray-200" />
-                )}
-                <span>
-                  {show.title}
-                  {show.year ? ` (${show.year})` : ""}
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="absolute z-10 mt-2 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#241f30] shadow-xl">
+          {results.map((show) => {
+            const isAmbiguous = results.some(
+              (other) =>
+                other.id !== show.id &&
+                other.title.toLowerCase() === show.title.toLowerCase() &&
+                other.year === show.year,
+            );
+            return (
+              <li key={show.id}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    onSelect(show);
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-white/90 hover:bg-white/10"
+                >
+                  {show.posterPath ? (
+                    <img
+                      src={`${TMDB_POSTER_BASE}${show.posterPath}`}
+                      alt=""
+                      className="h-10 w-7 flex-shrink-0 rounded object-cover"
+                    />
+                  ) : (
+                    <span className="h-10 w-7 flex-shrink-0 rounded bg-white/10" />
+                  )}
+                  <span className="text-[15px]">
+                    {show.title}
+                    {show.year ? ` (${show.year})` : ""}
+                    {isAmbiguous && show.originCountry ? (
+                      <span className="text-white/40"> · {show.originCountry}</span>
+                    ) : null}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

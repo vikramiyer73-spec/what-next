@@ -5,9 +5,12 @@ export type TrackEvent =
   | "started_typing"
   | "submitted_show"
   | "saw_results"
-  | "clicked_favorites_prompt"
+  | "dismissed_recommendation"
+  | "expanded_description"
+  | "saw_light_profile"
+  | "clicked_expand_profile"
   | "submitted_favorites"
-  | "saw_profile";
+  | "saw_full_profile";
 
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
