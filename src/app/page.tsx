@@ -121,6 +121,7 @@ export default function Home() {
 
   async function handleSubmitShow(e: React.FormEvent) {
     e.preventDefault();
+    if (loadingRecs) return;
     const title = selectedShow?.title ?? query.trim();
     if (!title) return;
 
@@ -128,12 +129,15 @@ export default function Home() {
       ? { title: selectedShow.title, overview: selectedShow.overview, year: selectedShow.year ?? undefined }
       : { title };
 
+    setQuery("");
+    setSelectedShow(null);
     runSearch(showInfo);
   }
 
   function handleClickRecentSearch(show: string) {
+    if (loadingRecs) return;
     track("clicked_recent_search", { show });
-    setQuery(show);
+    setQuery("");
     setSelectedShow(null);
     runSearch({ title: show });
   }
@@ -246,12 +250,11 @@ export default function Home() {
       {!submittedShow && (
         <div className="mt-6 text-center">
           <p className="font-alegreya font-medium text-[20px] leading-snug text-white/90">
-            That specific emptiness after finishing something great, when nothing else in your queue
-            looks right.
+            That emptiness you feel when you finish a great show, and you can&apos;t find anything to
+            fill that gap.
           </p>
           <p className="font-alegreya font-medium mt-2 text-[16px] leading-snug text-white/50">
-            We work out exactly what you&apos;ll miss about it — not just the genre — so what&apos;s
-            next actually fills the gap.
+            We&apos;ll figure out what you missed about that show and what you should watch next
           </p>
         </div>
       )}
@@ -259,6 +262,7 @@ export default function Home() {
       <form onSubmit={handleSubmitShow} className="mt-6">
         <ShowAutocomplete
           value={query}
+          disabled={loadingRecs}
           onChange={(v) => {
             setQuery(v);
             setSelectedShow(null);
@@ -268,8 +272,15 @@ export default function Home() {
             setQuery(show.title);
           }}
           onFirstType={() => track("started_typing")}
-          placeholder="e.g. The Wire"
+          placeholder={loadingRecs ? "Finding your next watch…" : "e.g. The Wire"}
         />
+        <button
+          type="submit"
+          disabled={loadingRecs || !query.trim()}
+          className="font-barlow mt-3 w-full rounded-full bg-white py-3 text-base font-semibold text-[#1a1626] disabled:opacity-40"
+        >
+          {loadingRecs ? "Finding your next watch…" : "Find my next watch"}
+        </button>
       </form>
 
       {!submittedShow && (

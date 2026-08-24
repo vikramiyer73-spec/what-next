@@ -16,19 +16,19 @@ function ProviderPill({ provider }: { provider: WatchProvider }) {
     <span
       title={provider.type === "flatrate" ? provider.name : `${provider.name} (${provider.type})`}
       style={{ borderColor: color, backgroundColor: `${color}1f` }}
-      className={`inline-flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2 ${quiet ? "opacity-70" : ""}`}
+      className={`inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 ${quiet ? "opacity-70" : ""}`}
     >
       {provider.logoPath ? (
         <img
           src={`${TMDB_LOGO_BASE}${provider.logoPath}`}
           alt={provider.name}
-          className="h-6 w-6 rounded-full object-cover"
+          className="h-9 w-9 rounded-full object-cover"
         />
       ) : (
-        <span className="font-barlow px-1 text-[11px] font-medium text-white/80">{provider.name}</span>
+        <span className="font-barlow px-1 text-[13px] font-medium text-white/80">{provider.name}</span>
       )}
       {quiet && (
-        <span className="font-barlow text-[9px] font-medium uppercase tracking-wide text-white/50">
+        <span className="font-barlow text-[10px] font-medium uppercase tracking-wide text-white/50">
           {provider.type}
         </span>
       )}
@@ -62,7 +62,7 @@ export default function ProviderBadges({ providers, showTitle }: ProviderBadgesP
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
       {visible.map((provider) => (
         <ProviderPill key={provider.name} provider={provider} />
       ))}
@@ -71,7 +71,7 @@ export default function ProviderBadges({ providers, showTitle }: ProviderBadgesP
         <button
           type="button"
           onClick={handleToggle}
-          className="font-barlow flex h-[26px] items-center justify-center rounded-full border border-white/25 px-2.5 text-[11px] text-white/60 hover:bg-white/10"
+          className="font-barlow flex h-11 items-center justify-center rounded-full border border-white/25 px-4 text-[13px] text-white/60 hover:bg-white/10"
         >
           {expanded ? "Show less" : `+${rest.length}`}
         </button>
@@ -83,7 +83,7 @@ export default function ProviderBadges({ providers, showTitle }: ProviderBadgesP
           style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
         >
           <div className="overflow-hidden">
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-2">
               {restGrouped.map((provider) => (
                 <ProviderPill key={provider.name} provider={provider} />
               ))}

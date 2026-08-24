@@ -1,8 +1,9 @@
-export const APP_VERSION = "v4";
+export const APP_VERSION = "v5";
 
 export const APP_VERSION_CHANGES = [
-  "staggered fade-up-in animation on recommendation cards, respecting prefers-reduced-motion",
-  "provider pills rebuilt with real TMDB logos and brand-colored borders/fills",
-  "provider pill contrast fix: dark brand colors (Peacock, Apple TV+, Starz) now use a light fallback instead of being unreadable",
-  "+N provider count is now an expand/collapse control revealing the full provider list, subscription options grouped before rent/buy",
+  "landing page copy rewritten (headline + subhead)",
+  "added a visible submit button beneath the search input (Enter still works)",
+  "search input locks and shows a clear disabled state while recommendations are generating",
+  "search input clears automatically after a show is submitted",
+  "provider pills enlarged for legible logos and comfortable mobile tap targets",
 ];

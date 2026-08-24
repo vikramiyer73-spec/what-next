@@ -73,7 +73,7 @@ export default function ShowAutocomplete({
         onBlur={() => {
           setTimeout(() => setOpen(false), 150);
         }}
-        className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-base text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none disabled:opacity-50"
+        className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-base text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/[0.03] disabled:text-white/50 disabled:placeholder:text-white/30"
       />
       {loading && (
         <span className="absolute right-5 top-3.5 text-xs text-white/40">…</span>
