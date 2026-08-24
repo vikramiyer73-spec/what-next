@@ -4,13 +4,11 @@ import { RECOMMEND_SYSTEM_PROMPT } from "@/lib/prompts";
 import { findBestTVMatch, getWatchProviders } from "@/lib/tmdb";
 import { EnrichedRecommendation, Recommendation } from "@/lib/types";
 
-const MAX_PROVIDER_BADGES = 2;
-
 async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecommendation> {
   try {
     const match = await findBestTVMatch(rec.title);
     if (!match) {
-      return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [], providerOverflow: 0 };
+      return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [] };
     }
 
     const providers = await getWatchProviders(match.id);
@@ -20,12 +18,11 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       tmdbId: match.id,
       posterPath: match.posterPath,
       overview: match.overview,
-      providers: providers.slice(0, MAX_PROVIDER_BADGES),
-      providerOverflow: Math.max(0, providers.length - MAX_PROVIDER_BADGES),
+      providers,
     };
   } catch (err) {
     console.error("recommend: enrichment error for", rec.title, err);
-    return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [], providerOverflow: 0 };
+    return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [] };
   }
 }
 

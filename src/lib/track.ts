@@ -11,7 +11,8 @@ export type TrackEvent =
   | "clicked_expand_profile"
   | "submitted_favorites"
   | "saw_full_profile"
-  | "clicked_recent_search";
+  | "clicked_recent_search"
+  | "expanded_providers";
 
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;

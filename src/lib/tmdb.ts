@@ -1,8 +1,9 @@
-import { ShowSummary, WatchProvider } from "./types";
+import { ProviderType, ShowSummary, WatchProvider } from "./types";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 export const TMDB_POSTER_BASE = "https://image.tmdb.org/t/p/w92";
 export const TMDB_POSTER_BASE_LARGE = "https://image.tmdb.org/t/p/w342";
+export const TMDB_LOGO_BASE = "https://image.tmdb.org/t/p/original";
 
 interface TMDBTVSearchResult {
   id: number;
@@ -67,13 +68,18 @@ export async function findBestTVMatch(title: string): Promise<TMDBMatch | null> 
   return { id: best.id, posterPath: best.posterPath, overview: best.overview || null };
 }
 
+interface TMDBWatchProviderEntry {
+  provider_name: string;
+  logo_path: string | null;
+}
+
 interface TMDBWatchProvidersResponse {
   results?: Record<
     string,
     {
-      flatrate?: { provider_name: string }[];
-      rent?: { provider_name: string }[];
-      buy?: { provider_name: string }[];
+      flatrate?: TMDBWatchProviderEntry[];
+      rent?: TMDBWatchProviderEntry[];
+      buy?: TMDBWatchProviderEntry[];
     }
   >;
 }
@@ -90,12 +96,17 @@ export async function getWatchProviders(tmdbId: number): Promise<WatchProvider[]
   const us = data.results?.US;
   if (!us) return [];
 
-  const flatrate: WatchProvider[] = (us.flatrate ?? []).map((p) => ({
-    name: p.provider_name,
-    type: "flatrate",
-  }));
-  const rent: WatchProvider[] = (us.rent ?? []).map((p) => ({ name: p.provider_name, type: "rent" }));
-  const buy: WatchProvider[] = (us.buy ?? []).map((p) => ({ name: p.provider_name, type: "buy" }));
+  const toProvider =
+    (type: ProviderType) =>
+    (p: TMDBWatchProviderEntry): WatchProvider => ({
+      name: p.provider_name,
+      type,
+      logoPath: p.logo_path,
+    });
+
+  const flatrate: WatchProvider[] = (us.flatrate ?? []).map(toProvider("flatrate"));
+  const rent: WatchProvider[] = (us.rent ?? []).map(toProvider("rent"));
+  const buy: WatchProvider[] = (us.buy ?? []).map(toProvider("buy"));
 
   const seen = new Set<string>();
   const ordered: WatchProvider[] = [];

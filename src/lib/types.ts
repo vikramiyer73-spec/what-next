@@ -12,6 +12,7 @@ export type ProviderType = "flatrate" | "rent" | "buy";
 export interface WatchProvider {
   name: string;
   type: ProviderType;
+  logoPath: string | null;
 }
 
 export interface Recommendation {
@@ -25,7 +26,6 @@ export interface EnrichedRecommendation extends Recommendation {
   posterPath: string | null;
   overview: string | null;
   providers: WatchProvider[];
-  providerOverflow: number;
 }
 
 export interface ViewerProfile {
