@@ -101,8 +101,16 @@ export default function Home() {
       if (!res.ok) throw new Error("request failed");
 
       await consumeNDJSON<EnrichedRecommendation>(res, (item) => {
+        let wasDuplicate = false;
+        setRecommendations((prev) => {
+          if (prev.some((r) => r.title.toLowerCase() === item.title.toLowerCase())) {
+            wasDuplicate = true;
+            return prev;
+          }
+          return [...prev, item];
+        });
+        if (wasDuplicate) return;
         receivedCount++;
-        setRecommendations((prev) => [...prev, item]);
         setExcludedTitles((prev) => [...prev, item.title]);
       });
 
