@@ -354,8 +354,13 @@ export default function Home() {
                     disabled={loadingFullProfile || favoriteSlots.every((f) => !f.query.trim())}
                     className="font-barlow mt-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1a1626] disabled:opacity-40"
                   >
-                    {loadingFullProfile ? "Building your fuller profile…" : "See my fuller profile"}
+                    See my fuller profile
                   </button>
+                  {loadingFullProfile && (
+                    <p className="font-barlow animate-pulse mt-3 text-sm text-white/40">
+                      Building your fuller profile…
+                    </p>
+                  )}
                   {fullProfileError && (
                     <p className="font-barlow mt-2 text-sm text-red-400">{fullProfileError}</p>
                   )}
