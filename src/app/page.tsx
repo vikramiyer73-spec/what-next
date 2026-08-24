@@ -6,8 +6,11 @@ import RecommendationCard from "@/components/RecommendationCard";
 import LightProfile from "@/components/LightProfile";
 import FavoritesExpander from "@/components/FavoritesExpander";
 import ProfileCard from "@/components/ProfileCard";
+import ExampleRecommendation from "@/components/ExampleRecommendation";
+import RecentSearches from "@/components/RecentSearches";
 import { track } from "@/lib/track";
 import { consumeNDJSON } from "@/lib/ndjson";
+import { pickRotatingRecentSearches } from "@/lib/recentSearches";
 import {
   EnrichedRecommendation,
   FavoriteSlot,
@@ -30,6 +33,7 @@ function newFavoriteSlot(id: number): FavoriteSlot {
 export default function Home() {
   const [query, setQuery] = useState("");
   const [selectedShow, setSelectedShow] = useState<ShowSummary | null>(null);
+  const [recentSearches] = useState<string[]>(() => pickRotatingRecentSearches(5));
 
   const [submittedShow, setSubmittedShow] = useState<SubmittedShowInfo | null>(null);
   const [recommendations, setRecommendations] = useState<EnrichedRecommendation[]>([]);
@@ -67,15 +71,7 @@ export default function Home() {
     }
   }
 
-  async function handleSubmitShow(e: React.FormEvent) {
-    e.preventDefault();
-    const title = selectedShow?.title ?? query.trim();
-    if (!title) return;
-
-    const showInfo: SubmittedShowInfo = selectedShow
-      ? { title: selectedShow.title, overview: selectedShow.overview, year: selectedShow.year ?? undefined }
-      : { title };
-
+  async function runSearch(showInfo: SubmittedShowInfo) {
     setSubmittedShow(showInfo);
     setRecommendations([]);
     setExcludedTitles([]);
@@ -121,6 +117,25 @@ export default function Home() {
     } finally {
       setLoadingRecs(false);
     }
+  }
+
+  async function handleSubmitShow(e: React.FormEvent) {
+    e.preventDefault();
+    const title = selectedShow?.title ?? query.trim();
+    if (!title) return;
+
+    const showInfo: SubmittedShowInfo = selectedShow
+      ? { title: selectedShow.title, overview: selectedShow.overview, year: selectedShow.year ?? undefined }
+      : { title };
+
+    runSearch(showInfo);
+  }
+
+  function handleClickRecentSearch(show: string) {
+    track("clicked_recent_search", { show });
+    setQuery(show);
+    setSelectedShow(null);
+    runSearch({ title: show });
   }
 
   async function handleDismiss(rec: EnrichedRecommendation) {
@@ -218,19 +233,28 @@ export default function Home() {
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
       <div className="flex items-baseline justify-between">
-        <p className="font-archivo text-sm font-bold uppercase tracking-[0.15em] text-white">
+        <p className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white">
           What Next
         </p>
         {submittedShow && (
-          <p className="font-archivo text-xs uppercase tracking-[0.15em] text-white/40">
+          <p className="font-barlow text-xs uppercase tracking-[0.15em] text-white/40">
             You just finished · {submittedShow.title}
           </p>
         )}
       </div>
 
-      <p className="font-archivo mt-6 text-center text-lg text-white/70">
-        We&apos;ll find you your next watch
-      </p>
+      {!submittedShow && (
+        <div className="mt-6 text-center">
+          <p className="font-alegreya font-medium text-[20px] leading-snug text-white/90">
+            That specific emptiness after finishing something great, when nothing else in your queue
+            looks right.
+          </p>
+          <p className="font-alegreya font-medium mt-2 text-[16px] leading-snug text-white/50">
+            We work out exactly what you&apos;ll miss about it — not just the genre — so what&apos;s
+            next actually fills the gap.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmitShow} className="mt-6">
         <ShowAutocomplete
@@ -248,7 +272,14 @@ export default function Home() {
         />
       </form>
 
-      {recsError && <p className="font-archivo mt-4 text-sm text-red-400">{recsError}</p>}
+      {!submittedShow && (
+        <>
+          <ExampleRecommendation />
+          <RecentSearches shows={recentSearches} onSelect={handleClickRecentSearch} />
+        </>
+      )}
+
+      {recsError && <p className="font-barlow mt-4 text-sm text-red-400">{recsError}</p>}
 
       {submittedShow && (recommendations.length > 0 || loadingRecs) && (
         <section className="mt-8">
@@ -262,7 +293,7 @@ export default function Home() {
           ))}
 
           {loadingRecs && (
-            <p className="font-archivo animate-pulse py-6 text-sm text-white/40">
+            <p className="font-barlow animate-pulse py-6 text-sm text-white/40">
               {recommendations.length === 0 ? "Finding your next watch…" : "Finding more…"}
             </p>
           )}
@@ -275,7 +306,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleClickExpandProfile}
-                  className="font-archivo self-start rounded-full border border-white/25 px-4 py-2 text-sm text-white/70 hover:bg-white/10"
+                  className="font-barlow self-start rounded-full border border-white/25 px-4 py-2 text-sm text-white/70 hover:bg-white/10"
                 >
                   Add more shows for a fuller read
                 </button>
@@ -286,7 +317,7 @@ export default function Home() {
                   onSubmit={handleSubmitFullProfile}
                   className="rounded-2xl border border-white/10 bg-white/5 p-5"
                 >
-                  <p className="font-archivo text-sm font-medium text-white/80">
+                  <p className="font-barlow text-sm font-medium text-white/80">
                     Add a few more favorites for a fuller read
                   </p>
                   <div className="mt-3">
@@ -300,12 +331,12 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={loadingFullProfile || favoriteSlots.every((f) => !f.query.trim())}
-                    className="font-archivo mt-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1a1626] disabled:opacity-40"
+                    className="font-barlow mt-4 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1a1626] disabled:opacity-40"
                   >
                     {loadingFullProfile ? "Building your fuller profile…" : "See my fuller profile"}
                   </button>
                   {fullProfileError && (
-                    <p className="font-archivo mt-2 text-sm text-red-400">{fullProfileError}</p>
+                    <p className="font-barlow mt-2 text-sm text-red-400">{fullProfileError}</p>
                   )}
                 </form>
               )}

@@ -1,13 +1,8 @@
-export const APP_VERSION = "v2";
+export const APP_VERSION = "v3";
 
 export const APP_VERSION_CHANGES = [
-  "dark redesign with three-column result rows",
-  "streaming watch-provider badges (US, flatrate prioritized)",
-  "already-watched dismiss + regenerate",
-  "inline full-description expander",
-  "automatic lightweight profile from the entered show, with optional expansion to a fuller profile",
-  "recommendations stream in progressively instead of arriving all at once",
-  "shorter, less-obvious recommendation angles",
-  "fixed: unrecognized/obscure shows no longer break recommendations",
-  "fixed: duplicate-looking same-title shows (e.g. international remakes) now disambiguated in search",
+  "typography rebuilt to exact spec (Barlow Condensed / EB Garamond / Alegreya, weight 500 only)",
+  "landing screen: emotional framing copy stating the Netflix differentiation up front",
+  "landing screen: static example recommendation demonstrating the product before signup",
+  "landing screen: clickable recent-search chips (hardcoded rotation for now)",
 ];

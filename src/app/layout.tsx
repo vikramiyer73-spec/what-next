@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Archivo, Lora } from "next/font/google";
+import { Barlow_Condensed, EB_Garamond, Alegreya } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PostHogProvider from "@/components/PostHogProvider";
 import "./globals.css";
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair-italic",
+// Only the weights the Figma spec actually calls for — loading full families
+// here would be a real latency cost for no visual benefit.
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["500"],
+});
+
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
   subsets: ["latin"],
   style: ["italic"],
-  weight: ["500", "600"],
+  weight: ["500"],
 });
 
-const archivo = Archivo({
-  variable: "--font-archivo-sans",
+const alegreya = Alegreya({
+  variable: "--font-alegreya",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const lora = Lora({
-  variable: "--font-lora-serif",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["500"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${playfairDisplay.variable} ${archivo.variable} ${lora.variable} h-full antialiased`}
+      className={`${barlowCondensed.variable} ${ebGaramond.variable} ${alegreya.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <PostHogProvider />

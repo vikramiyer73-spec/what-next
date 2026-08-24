@@ -25,19 +25,27 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
 
   return (
     <div className="grid grid-cols-[140px_1fr_240px] gap-8 border-b border-white/10 py-10 max-md:grid-cols-1 max-md:gap-4">
-      <p className="font-archivo text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+      <p
+        className="font-barlow font-medium uppercase tracking-[0.08em] text-[16px] md:text-[24px]"
+        style={{ color: "#958FB5" }}
+      >
         If what you miss is
       </p>
 
       <div className="min-w-0">
-        <p className="font-playfair text-xl italic leading-snug text-white/90">{rec.angle}</p>
+        <p className="font-garamond italic font-medium leading-snug text-white text-[24px] md:text-[38px]">
+          {rec.angle}
+        </p>
 
-        <h3 className="font-archivo mt-3 text-2xl font-bold uppercase tracking-[0.06em] text-white">
+        <h3
+          className="font-barlow font-medium uppercase tracking-[0.08em] mt-3 text-[32px] md:text-[56px] leading-none"
+          style={{ color: "#E8E4FF" }}
+        >
           {rec.title}
         </h3>
 
         {rec.providers.length > 0 && (
-          <div className="mt-2">
+          <div className="mt-3">
             <ProviderBadges providers={rec.providers} overflow={rec.providerOverflow} />
           </div>
         )}
@@ -47,14 +55,14 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
             type="button"
             onClick={onDismiss}
             disabled={dismissing}
-            className="font-archivo rounded-full border border-white/25 px-3 py-1 text-xs text-white/70 hover:bg-white/10 disabled:opacity-40"
+            className="font-barlow rounded-full border border-white/25 px-3 py-1 text-xs text-white/70 hover:bg-white/10 disabled:opacity-40"
           >
             {dismissing ? "Finding another…" : "Already Watched?"}
           </button>
-          <span className="font-archivo text-xs text-white/35">We&apos;ll give you a new suggestion</span>
+          <span className="font-barlow text-xs text-white/35">We&apos;ll give you a new suggestion</span>
         </div>
 
-        <p className="font-lora mt-4 text-base leading-relaxed text-white/70">
+        <p className="font-alegreya font-medium tracking-normal mt-4 text-[18px] leading-relaxed text-white/70">
           {rec.reason}
           {rec.overview && (
             <>
@@ -62,7 +70,7 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
               <button
                 type="button"
                 onClick={handleExpand}
-                className="font-archivo text-white/50 underline decoration-white/30 hover:text-white/80"
+                className="font-barlow text-white/50 underline decoration-white/30 hover:text-white/80"
               >
                 {expanded ? "Hide description" : "See full description"}
               </button>
@@ -71,7 +79,7 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
         </p>
 
         {expanded && rec.overview && (
-          <div className="font-lora mt-3 rounded-xl bg-white/5 p-4 text-sm leading-relaxed text-white/60">
+          <div className="font-alegreya font-medium tracking-normal mt-3 rounded-xl bg-white/5 p-4 text-[18px] leading-relaxed text-white/60">
             {rec.overview}
           </div>
         )}

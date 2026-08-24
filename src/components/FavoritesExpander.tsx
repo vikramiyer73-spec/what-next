@@ -31,7 +31,7 @@ export default function FavoritesExpander({
         <button
           type="button"
           onClick={onAddSlot}
-          className="font-archivo self-start text-sm text-white/50 underline decoration-white/30 hover:text-white/80"
+          className="font-barlow self-start text-sm text-white/50 underline decoration-white/30 hover:text-white/80"
         >
           + Add another
         </button>

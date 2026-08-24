@@ -10,7 +10,8 @@ export type TrackEvent =
   | "saw_light_profile"
   | "clicked_expand_profile"
   | "submitted_favorites"
-  | "saw_full_profile";
+  | "saw_full_profile"
+  | "clicked_recent_search";
 
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
