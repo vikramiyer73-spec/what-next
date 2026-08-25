@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, EB_Garamond, Alegreya } from "next/font/google";
+import { Barlow_Condensed, Alegreya } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PostHogProvider from "@/components/PostHogProvider";
 import "./globals.css";
 
-// Only the weights the Figma spec actually calls for — loading full families
-// here would be a real latency cost for no visual benefit.
+// Only the weights actually used — loading full families here would be a
+// real latency cost for no visual benefit. Two families total (down from
+// three): Barlow Condensed for structural/UI text, Alegreya for reading copy.
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow-condensed",
   subsets: ["latin"],
-  weight: ["500"],
-});
-
-const ebGaramond = EB_Garamond({
-  variable: "--font-eb-garamond",
-  subsets: ["latin"],
-  style: ["italic"],
   weight: ["500"],
 });
 
@@ -34,12 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${barlowCondensed.variable} ${ebGaramond.variable} ${alegreya.variable} h-full antialiased`}
+      className={`${barlowCondensed.variable} ${alegreya.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <PostHogProvider />
         {children}
-        <footer className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/40">
+        <footer className="border-t border-white/10 px-4 py-4 text-center text-xs text-[#9791B8]">
           This product uses the TMDB API but is not endorsed or certified by{" "}
           <a
             href="https://www.themoviedb.org/"

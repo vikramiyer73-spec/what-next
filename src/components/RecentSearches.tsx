@@ -10,7 +10,7 @@ export default function RecentSearches({ shows, onSelect }: RecentSearchesProps)
 
   return (
     <div className="mt-8">
-      <p className="font-barlow text-xs font-medium uppercase tracking-[0.12em] text-white/35">
+      <p className="font-barlow text-xs font-medium uppercase tracking-[0.12em] text-[#9791B8]">
         Others just finished
       </p>
       <div className="mt-2 flex flex-wrap gap-2">

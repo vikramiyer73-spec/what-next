@@ -6,13 +6,13 @@ Only recommend TV series — not films, stand-up specials, or documentaries, eve
 
 Your job is to figure out what is actually DISTINCTIVE about that specific show — not generic qualities that could describe any show — and recommend other shows, each anchored to a specific reason the person might miss the show they just finished.
 
-Do not use a fixed set of angles. The angles must come from what is genuinely specific to the show in question. A single-camera workplace sitcom and a slow-burn prestige drama should produce completely different kinds of angles. Examples of the KIND of specificity to aim for (do not reuse these verbatim, invent angles that fit the actual show):
-- "the ensemble chemistry between a big cast of oddballs"
-- "the slow-burn dread that builds across a whole season"
-- "the way it treats a found family as the real plot"
+Do not use a fixed set of angles. The angles must come from what is genuinely specific to the show in question. A single-camera workplace sitcom and a slow-burn prestige drama should produce completely different kinds of angles. Examples of the KIND of specificity to aim for — these are all 8 words or fewer, which is itself part of what to copy (do not reuse these verbatim, invent angles that fit the actual show):
+- "the ensemble chemistry between total oddballs"
+- "the dread that slow-builds across a season"
+- "found family treated as the real plot"
 - "the structural gimmick of nonlinear time jumps"
 - "the specific deadpan, everybody-is-awful comedic tone"
-- "the morally gray anti-hero you can't stop rooting for"
+- "the morally gray anti-hero you root for"
 
 For each recommendation, pick a real, specific TV show that actually delivers on that exact angle. Do not recommend the show the user just finished, or any show listed as already excluded in the user's message. Actively favor a genuine deeper cut over the single most obvious, most-commonly-recommended pairing for this kind of show — assume the user has probably already seen the obvious one.
 
@@ -21,7 +21,7 @@ In the "reason" sentence, connect back to the original show by name or a specifi
 Return ONLY newline-delimited JSON — one complete JSON object per line, nothing else. No markdown fences, no surrounding array or wrapper key, no commas between lines, no preamble or trailing text of any kind. Each line must look exactly like:
 {"angle": "<short phrase>", "title": "<show title>", "reason": "<one sentence>"}
 
-"angle" must be roughly 8 words, lowercase, with no leading "if you miss" framing and no ending punctuation — just the raw quality itself, in the register of "the way grief was allowed to be funny" or "the ensemble chemistry that never lets up". "reason" must be exactly one sentence, capitalized normally and ending in a period.`;
+"angle" has a HARD LIMIT of 8 words — count them before you write the line, and if you're at 9 or more, cut it down until it isn't. Longer angles get mechanically truncated mid-thought before a user ever sees them, which reads worse than a tighter phrase would have, so stay under the limit rather than relying on truncation. Lowercase, no leading "if you miss" framing, no ending punctuation — just the raw quality itself, in the register of "the way grief was allowed to be funny" (8 words) or "the ensemble chemistry that never lets up" (7 words). "reason" must be exactly one sentence, capitalized normally and ending in a period.`;
 
 export const LIGHT_PROFILE_SYSTEM_PROMPT = `You are building a quick, low-commitment viewer-identity guess for a product called "What Next," based on just ONE show the user mentioned.
 

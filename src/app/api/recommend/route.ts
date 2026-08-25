@@ -4,14 +4,34 @@ import { RECOMMEND_SYSTEM_PROMPT } from "@/lib/prompts";
 import { findBestTVMatch, getWatchProviders } from "@/lib/tmdb";
 import { EnrichedRecommendation, Recommendation } from "@/lib/types";
 
+// Target is ~8 words per the prompt — prompting alone hasn't reliably held
+// that line, so this is a hard backstop that guarantees the layout never
+// breaks regardless of what the model actually produces.
+const MAX_ANGLE_WORDS = 11;
+
+function enforceAngleLength(angle: string): string {
+  const words = angle.trim().split(/\s+/);
+  if (words.length <= MAX_ANGLE_WORDS) return angle;
+  console.warn(`recommend: truncated overlong angle (${words.length} words): "${angle}"`);
+  return words.slice(0, MAX_ANGLE_WORDS).join(" ");
+}
+
 async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecommendation> {
   try {
     const match = await findBestTVMatch(rec.title);
     if (!match) {
-      return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [] };
+      return {
+        ...rec,
+        tmdbId: null,
+        posterPath: null,
+        overview: null,
+        providers: [],
+        voteAverage: null,
+        watchLink: null,
+      };
     }
 
-    const providers = await getWatchProviders(match.id);
+    const { providers, link } = await getWatchProviders(match.id);
 
     return {
       ...rec,
@@ -19,10 +39,20 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       posterPath: match.posterPath,
       overview: match.overview,
       providers,
+      voteAverage: match.voteAverage,
+      watchLink: link,
     };
   } catch (err) {
     console.error("recommend: enrichment error for", rec.title, err);
-    return { ...rec, tmdbId: null, posterPath: null, overview: null, providers: [] };
+    return {
+      ...rec,
+      tmdbId: null,
+      posterPath: null,
+      overview: null,
+      providers: [],
+      voteAverage: null,
+      watchLink: null,
+    };
   }
 }
 
@@ -82,6 +112,7 @@ export async function POST(req: NextRequest) {
           console.warn("recommend: rejected forbidden title:", rec.title);
           return;
         }
+        rec.angle = enforceAngleLength(rec.angle);
         itemCount++;
         const enrichStart = performance.now();
         const task = enrichRecommendation(rec)

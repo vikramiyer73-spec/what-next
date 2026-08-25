@@ -13,6 +13,8 @@ interface TMDBTVSearchResult {
   poster_path: string | null;
   overview: string;
   origin_country?: string[];
+  vote_average?: number;
+  vote_count?: number;
 }
 
 interface TMDBTVSearchResponse {
@@ -26,6 +28,9 @@ function requireApiKey(): string {
   }
   return apiKey;
 }
+
+/** TMDB scores shows with very few votes are noisy — not worth surfacing. */
+const MIN_VOTE_COUNT_FOR_RATING = 20;
 
 export async function searchTVShows(query: string): Promise<ShowSummary[]> {
   const apiKey = requireApiKey();
@@ -49,6 +54,10 @@ export async function searchTVShows(query: string): Promise<ShowSummary[]> {
     posterPath: result.poster_path,
     overview: result.overview,
     originCountry: result.origin_country?.[0] ?? null,
+    voteAverage:
+      result.vote_average && (result.vote_count ?? 0) >= MIN_VOTE_COUNT_FOR_RATING
+        ? result.vote_average
+        : null,
   }));
 }
 
@@ -56,6 +65,7 @@ export interface TMDBMatch {
   id: number;
   posterPath: string | null;
   overview: string | null;
+  voteAverage: number | null;
 }
 
 interface TMDBSeasonSummary {
@@ -117,7 +127,7 @@ export async function findBestTVMatch(title: string): Promise<TMDBMatch | null> 
     }
   }
 
-  return { id: best.id, posterPath, overview: best.overview || null };
+  return { id: best.id, posterPath, overview: best.overview || null, voteAverage: best.voteAverage };
 }
 
 interface TMDBWatchProviderEntry {
@@ -129,6 +139,7 @@ interface TMDBWatchProvidersResponse {
   results?: Record<
     string,
     {
+      link?: string;
       flatrate?: TMDBWatchProviderEntry[];
       rent?: TMDBWatchProviderEntry[];
       buy?: TMDBWatchProviderEntry[];
@@ -136,17 +147,27 @@ interface TMDBWatchProvidersResponse {
   >;
 }
 
+export interface WatchProvidersResult {
+  providers: WatchProvider[];
+  /**
+   * TMDB only supplies one aggregate watch-page link per show/region (not a
+   * distinct deep link per provider) — this is that link, used for every
+   * provider pill's click-through.
+   */
+  link: string | null;
+}
+
 /** US watch providers for a TMDB TV id, subscription (flatrate) options first. */
-export async function getWatchProviders(tmdbId: number): Promise<WatchProvider[]> {
+export async function getWatchProviders(tmdbId: number): Promise<WatchProvidersResult> {
   const apiKey = requireApiKey();
   const url = `${TMDB_BASE_URL}/tv/${tmdbId}/watch/providers?api_key=${apiKey}`;
 
   const res = await fetch(url);
-  if (!res.ok) return [];
+  if (!res.ok) return { providers: [], link: null };
 
   const data = (await res.json()) as TMDBWatchProvidersResponse;
   const us = data.results?.US;
-  if (!us) return [];
+  if (!us) return { providers: [], link: null };
 
   const toProvider =
     (type: ProviderType) =>
@@ -173,5 +194,5 @@ export async function getWatchProviders(tmdbId: number): Promise<WatchProvider[]
     seen.add(key);
     ordered.push(provider);
   }
-  return ordered;
+  return { providers: ordered, link: us.link ?? null };
 }

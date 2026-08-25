@@ -73,10 +73,10 @@ export default function ShowAutocomplete({
         onBlur={() => {
           setTimeout(() => setOpen(false), 150);
         }}
-        className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-base text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/[0.03] disabled:text-white/50 disabled:placeholder:text-white/30"
+        className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-base text-white placeholder:text-white/50 focus:border-white/30 focus:outline-none disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/[0.03] disabled:text-white/50 disabled:placeholder:text-white/40"
       />
       {loading && (
-        <span className="absolute right-5 top-3.5 text-xs text-white/40">…</span>
+        <span className="absolute right-5 top-3.5 text-xs text-white/60">…</span>
       )}
       {open && value.trim() && results.length > 0 && (
         <ul className="absolute z-10 mt-2 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#241f30] shadow-xl">
@@ -111,7 +111,7 @@ export default function ShowAutocomplete({
                     {show.title}
                     {show.year ? ` (${show.year})` : ""}
                     {isAmbiguous && show.originCountry ? (
-                      <span className="text-white/40"> · {show.originCountry}</span>
+                      <span className="text-white/60"> · {show.originCountry}</span>
                     ) : null}
                   </span>
                 </button>

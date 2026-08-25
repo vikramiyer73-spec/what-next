@@ -243,14 +243,14 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-baseline justify-between">
           <p className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white">
             What Next
           </p>
           {submittedShow && (
-            <p className="font-barlow text-xs uppercase tracking-[0.15em] text-white/40">
+            <p className="font-barlow text-xs uppercase tracking-[0.15em] text-[#9791B8]">
               You just finished · {submittedShow.title}
             </p>
           )}
@@ -304,17 +304,18 @@ export default function Home() {
 
       {submittedShow && (recommendations.length > 0 || loadingRecs) && (
         <section className="mt-8">
-          {recommendations.map((rec) => (
+          {recommendations.map((rec, index) => (
             <RecommendationCard
               key={rec.title}
               rec={rec}
+              index={index}
               onDismiss={() => handleDismiss(rec)}
               dismissing={dismissingTitle === rec.title}
             />
           ))}
 
           {loadingRecs && (
-            <p className="font-barlow animate-pulse py-6 text-sm text-white/40">
+            <p className="font-barlow animate-pulse py-6 text-sm text-[#9791B8]">
               {recommendations.length === 0 ? "Finding your next watch…" : "Finding more…"}
             </p>
           )}
@@ -357,7 +358,7 @@ export default function Home() {
                     See my fuller profile
                   </button>
                   {loadingFullProfile && (
-                    <p className="font-barlow animate-pulse mt-3 text-sm text-white/40">
+                    <p className="font-barlow animate-pulse mt-3 text-sm text-[#9791B8]">
                       Building your fuller profile…
                     </p>
                   )}

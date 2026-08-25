@@ -8,16 +8,19 @@ import { track } from "@/lib/track";
 
 const VISIBLE_COUNT = 2;
 
-function ProviderPill({ provider }: { provider: WatchProvider }) {
+interface ProviderPillProps {
+  provider: WatchProvider;
+  watchLink: string | null;
+  showTitle: string;
+}
+
+function ProviderPill({ provider, watchLink, showTitle }: ProviderPillProps) {
   const color = pillColorForProvider(provider.name);
   const quiet = provider.type !== "flatrate";
+  const label = provider.type === "flatrate" ? provider.name : `${provider.name} (${provider.type})`;
 
-  return (
-    <span
-      title={provider.type === "flatrate" ? provider.name : `${provider.name} (${provider.type})`}
-      style={{ borderColor: color, backgroundColor: `${color}1f` }}
-      className={`inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 ${quiet ? "opacity-70" : ""}`}
-    >
+  const content = (
+    <>
       {provider.logoPath ? (
         <img
           src={`${TMDB_LOGO_BASE}${provider.logoPath}`}
@@ -32,16 +35,42 @@ function ProviderPill({ provider }: { provider: WatchProvider }) {
           {provider.type}
         </span>
       )}
-    </span>
+    </>
+  );
+
+  const className = `inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3 ${quiet ? "opacity-70" : ""} ${watchLink ? "hover:opacity-90" : ""}`;
+  const style = { borderColor: color, backgroundColor: `${color}1f` };
+
+  if (!watchLink) {
+    return (
+      <span title={label} style={style} className={className}>
+        {content}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={watchLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={label}
+      style={style}
+      className={className}
+      onClick={() => track("clicked_provider_link", { show: showTitle, provider: provider.name })}
+    >
+      {content}
+    </a>
   );
 }
 
 interface ProviderBadgesProps {
   providers: WatchProvider[];
   showTitle: string;
+  watchLink: string | null;
 }
 
-export default function ProviderBadges({ providers, showTitle }: ProviderBadgesProps) {
+export default function ProviderBadges({ providers, showTitle, watchLink }: ProviderBadgesProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (providers.length === 0) return null;
@@ -64,7 +93,7 @@ export default function ProviderBadges({ providers, showTitle }: ProviderBadgesP
   return (
     <div className="flex flex-wrap items-center gap-2">
       {visible.map((provider) => (
-        <ProviderPill key={provider.name} provider={provider} />
+        <ProviderPill key={provider.name} provider={provider} watchLink={watchLink} showTitle={showTitle} />
       ))}
 
       {rest.length > 0 && (
@@ -85,7 +114,12 @@ export default function ProviderBadges({ providers, showTitle }: ProviderBadgesP
           <div className="overflow-hidden">
             <div className="mt-2 flex flex-wrap gap-2">
               {restGrouped.map((provider) => (
-                <ProviderPill key={provider.name} provider={provider} />
+                <ProviderPill
+                  key={provider.name}
+                  provider={provider}
+                  watchLink={watchLink}
+                  showTitle={showTitle}
+                />
               ))}
             </div>
           </div>
