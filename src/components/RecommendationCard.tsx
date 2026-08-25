@@ -94,15 +94,15 @@ export default function RecommendationCard({ rec, onDismiss, dismissing }: Recom
         )}
       </div>
 
-      <div className="max-lg:hidden">
+      <div className="mt-6 lg:mt-0">
         {rec.posterPath ? (
           <img
             src={`${TMDB_POSTER_BASE_LARGE}${rec.posterPath}`}
             alt={rec.title}
-            className="w-full rounded-lg border border-white/10 object-cover"
+            className="w-full max-w-[220px] rounded-lg border border-white/10 object-cover lg:max-w-none"
           />
         ) : (
-          <div className="aspect-2/3 w-full rounded-lg bg-white/5" />
+          <div className="aspect-2/3 w-full max-w-[220px] rounded-lg bg-white/5 lg:max-w-none" />
         )}
       </div>
     </div>
