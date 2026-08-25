@@ -281,7 +281,7 @@ export default function Home() {
               setQuery(show.title);
             }}
             onFirstType={() => track("started_typing")}
-            placeholder={loadingRecs ? "Finding your next watch…" : "e.g. The Wire"}
+            placeholder={loadingRecs ? "Finding your next watch…" : "Enter a show: e.g. The Wire"}
           />
           <button
             type="submit"
