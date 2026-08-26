@@ -9,7 +9,7 @@ export default function RecentSearches({ shows, onSelect }: RecentSearchesProps)
   if (shows.length === 0) return null;
 
   return (
-    <div className="mt-8">
+    <div className="mt-6">
       <p className="font-barlow text-xs font-medium uppercase tracking-[0.12em] text-[#9791B8]">
         Others just finished
       </p>

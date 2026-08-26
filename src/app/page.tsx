@@ -8,7 +8,6 @@ import LoadingDots from "@/components/LoadingDots";
 import LightProfile from "@/components/LightProfile";
 import FavoritesExpander from "@/components/FavoritesExpander";
 import ProfileCard from "@/components/ProfileCard";
-import ExampleRecommendation from "@/components/ExampleRecommendation";
 import RecentSearches from "@/components/RecentSearches";
 import { track } from "@/lib/track";
 import { consumeNDJSON } from "@/lib/ndjson";
@@ -285,7 +284,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-baseline justify-between">
           <button
@@ -344,7 +343,6 @@ export default function Home() {
 
         {homeContentMounted && (
           <div className={submittedShow ? "animate-fade-out-down" : "animate-fade-up-in"}>
-            <ExampleRecommendation />
             <RecentSearches shows={recentSearches} onSelect={handleClickRecentSearch} />
           </div>
         )}
