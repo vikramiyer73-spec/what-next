@@ -284,7 +284,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-baseline justify-between">
           <button
