@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ShowAutocomplete from "@/components/ShowAutocomplete";
 import RecommendationCard from "@/components/RecommendationCard";
+import RecommendationSkeleton from "@/components/RecommendationSkeleton";
+import LoadingDots from "@/components/LoadingDots";
 import LightProfile from "@/components/LightProfile";
 import FavoritesExpander from "@/components/FavoritesExpander";
 import ProfileCard from "@/components/ProfileCard";
@@ -51,9 +53,20 @@ export default function Home() {
   const [fullProfile, setFullProfile] = useState<ViewerProfile | null>(null);
   const [fullProfileTitles, setFullProfileTitles] = useState<string[]>([]);
 
+  // Kept mounted slightly past `submittedShow` flipping so the fade-out
+  // animation can play before the intro content leaves the DOM.
+  const [homeContentMounted, setHomeContentMounted] = useState(true);
+  const searchGenerationRef = useRef(0);
+
   useEffect(() => {
     track("landed");
   }, []);
+
+  useEffect(() => {
+    if (!submittedShow) return;
+    const timeout = setTimeout(() => setHomeContentMounted(false), 220);
+    return () => clearTimeout(timeout);
+  }, [submittedShow]);
 
   async function fetchLightProfile(show: SubmittedShowInfo) {
     try {
@@ -72,6 +85,7 @@ export default function Home() {
   }
 
   async function runSearch(showInfo: SubmittedShowInfo) {
+    const generation = ++searchGenerationRef.current;
     setSubmittedShow(showInfo);
     setRecommendations([]);
     setExcludedTitles([]);
@@ -101,6 +115,7 @@ export default function Home() {
       if (!res.ok) throw new Error("request failed");
 
       await consumeNDJSON<EnrichedRecommendation>(res, (item) => {
+        if (searchGenerationRef.current !== generation) return;
         let wasDuplicate = false;
         setRecommendations((prev) => {
           if (prev.some((r) => r.title.toLowerCase() === item.title.toLowerCase())) {
@@ -114,6 +129,8 @@ export default function Home() {
         setExcludedTitles((prev) => [...prev, item.title]);
       });
 
+      if (searchGenerationRef.current !== generation) return;
+
       const latencyMs = Math.round(performance.now() - startedAt);
       if (receivedCount === 0) {
         setRecsError("Something went wrong generating recommendations. Try again.");
@@ -121,10 +138,35 @@ export default function Home() {
         track("saw_results", { show: showInfo.title, count: receivedCount, latencyMs });
       }
     } catch {
-      setRecsError("Something went wrong generating recommendations. Try again.");
+      if (searchGenerationRef.current === generation) {
+        setRecsError("Something went wrong generating recommendations. Try again.");
+      }
     } finally {
-      setLoadingRecs(false);
+      if (searchGenerationRef.current === generation) {
+        setLoadingRecs(false);
+      }
     }
+  }
+
+  function handleGoHome() {
+    if (!submittedShow) return;
+    searchGenerationRef.current++;
+    track("clicked_home");
+    setSubmittedShow(null);
+    setHomeContentMounted(true);
+    setRecommendations([]);
+    setExcludedTitles([]);
+    setRecsError(null);
+    setLoadingRecs(false);
+    setDismissingTitle(null);
+    setLightProfile(null);
+    setProfileExpanded(false);
+    setFavoriteSlots([newFavoriteSlot(0)]);
+    setFullProfile(null);
+    setFullProfileError(null);
+    setFullProfileTitles([]);
+    setQuery("");
+    setSelectedShow(null);
   }
 
   async function handleSubmitShow(e: React.FormEvent) {
@@ -246,18 +288,26 @@ export default function Home() {
     <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-baseline justify-between">
-          <p className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white">
+          <button
+            type="button"
+            onClick={handleGoHome}
+            className="font-barlow text-sm font-medium uppercase tracking-[0.15em] text-white hover:text-white/80"
+          >
             What Next
-          </p>
+          </button>
           {submittedShow && (
-            <p className="font-barlow text-xs uppercase tracking-[0.15em] text-[#9791B8]">
+            <p className="font-barlow animate-fade-up-in text-xs uppercase tracking-[0.15em] text-[#9791B8]">
               You just finished · {submittedShow.title}
             </p>
           )}
         </div>
 
-        {!submittedShow && (
-          <div className="mx-auto mt-6 max-w-xl text-center">
+        {homeContentMounted && (
+          <div
+            className={`mx-auto mt-6 max-w-xl text-center ${
+              submittedShow ? "animate-fade-out-down" : "animate-fade-up-in"
+            }`}
+          >
             <p className="font-alegreya font-medium text-[20px] leading-snug text-white/90">
               That emptiness you feel when you finish a great show, and you can&apos;t find anything
               to fill that gap.
@@ -292,11 +342,11 @@ export default function Home() {
           </button>
         </form>
 
-        {!submittedShow && (
-          <>
+        {homeContentMounted && (
+          <div className={submittedShow ? "animate-fade-out-down" : "animate-fade-up-in"}>
             <ExampleRecommendation />
             <RecentSearches shows={recentSearches} onSelect={handleClickRecentSearch} />
-          </>
+          </div>
         )}
 
         {recsError && <p className="font-barlow mt-4 text-sm text-red-400">{recsError}</p>}
@@ -315,9 +365,12 @@ export default function Home() {
           ))}
 
           {loadingRecs && (
-            <p className="font-barlow animate-pulse py-6 text-sm text-[#9791B8]">
-              {recommendations.length === 0 ? "Finding your next watch…" : "Finding more…"}
-            </p>
+            <>
+              <span className="sr-only" role="status">
+                {recommendations.length === 0 ? "Finding your next watch…" : "Finding more…"}
+              </span>
+              <RecommendationSkeleton index={recommendations.length} />
+            </>
           )}
 
           {lightProfile && (
@@ -358,8 +411,9 @@ export default function Home() {
                     See my fuller profile
                   </button>
                   {loadingFullProfile && (
-                    <p className="font-barlow animate-pulse mt-3 text-sm text-[#9791B8]">
+                    <p className="font-barlow mt-3 flex items-center gap-2 text-sm text-[#9791B8]">
                       Building your fuller profile…
+                      <LoadingDots />
                     </p>
                   )}
                   {fullProfileError && (

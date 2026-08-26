@@ -13,7 +13,8 @@ export type TrackEvent =
   | "saw_full_profile"
   | "clicked_recent_search"
   | "expanded_providers"
-  | "clicked_provider_link";
+  | "clicked_provider_link"
+  | "clicked_home";
 
 export function track(event: TrackEvent, payload?: Record<string, unknown>) {
   if (typeof window === "undefined") return;

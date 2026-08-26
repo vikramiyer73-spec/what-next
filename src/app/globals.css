@@ -31,8 +31,64 @@ body {
   }
 }
 
+@keyframes fade-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes bounce-dot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.skeleton-bar {
+  background-color: rgb(255 255 255 / 6%);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .animate-fade-up-in {
     animation: fade-up-in 400ms ease-out both;
+  }
+
+  .animate-fade-out-down {
+    animation: fade-out-down 220ms ease-in both;
+  }
+
+  .skeleton-bar {
+    background-image: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 4%) 25%,
+      rgb(255 255 255 / 14%) 37%,
+      rgb(255 255 255 / 4%) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .loading-dot {
+    animation: bounce-dot 1.2s ease-in-out infinite;
   }
 }
