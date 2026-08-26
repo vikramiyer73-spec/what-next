@@ -1,5 +1,5 @@
-export const APP_VERSION = "v12";
+export const APP_VERSION = "v13";
 
 export const APP_VERSION_CHANGES = [
-  "show rating now pulled from IMDb (via OMDb) when available, falling back to TMDB's score",
+  "IMDb-sourced ratings now show a small IMDb badge instead of a star, so it's clear where the number comes from",
 ];

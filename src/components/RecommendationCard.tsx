@@ -60,8 +60,18 @@ export default function RecommendationCard({ rec, index, onDismiss, dismissing }
         </h3>
 
         {rec.voteAverage !== null && (
-          <p className="font-barlow mt-1 text-[13px] text-[#9791B8]">
-            <span aria-hidden="true">★</span> {rec.voteAverage.toFixed(1)}
+          <p className="font-barlow mt-1 flex items-center gap-1.5 text-[13px] text-[#9791B8]">
+            {rec.ratingSource === "imdb" ? (
+              <span
+                aria-label="IMDb rating"
+                className="rounded-[3px] bg-[#F5C518] px-[4px] py-[1px] text-[10px] font-bold leading-[13px] tracking-tight text-black"
+              >
+                IMDb
+              </span>
+            ) : (
+              <span aria-hidden="true">★</span>
+            )}
+            {rec.voteAverage.toFixed(1)}
           </p>
         )}
 

@@ -29,6 +29,7 @@ export interface EnrichedRecommendation extends Recommendation {
   providers: WatchProvider[];
   voteAverage: number | null;
   watchLink: string | null;
+  ratingSource: "imdb" | "tmdb" | null;
 }
 
 export interface ViewerProfile {

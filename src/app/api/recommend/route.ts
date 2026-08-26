@@ -29,6 +29,7 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
         providers: [],
         voteAverage: null,
         watchLink: null,
+        ratingSource: null,
       };
     }
 
@@ -37,18 +38,22 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       getImdbRating(rec.title),
     ]);
 
+    // IMDb rating (via OMDb) is preferred — it's the more widely recognized
+    // source and is present for nearly every title, unlike Rotten Tomatoes
+    // on OMDb's free tier. Falls back to TMDB's own score if OMDb has no
+    // match or no rating for this title.
+    const voteAverage = imdbRating ?? match.voteAverage;
+    const ratingSource = imdbRating !== null ? "imdb" : match.voteAverage !== null ? "tmdb" : null;
+
     return {
       ...rec,
       tmdbId: match.id,
       posterPath: match.posterPath,
       overview: match.overview,
       providers,
-      // IMDb rating (via OMDb) is preferred — it's the more widely recognized
-      // source and is present for nearly every title, unlike Rotten Tomatoes
-      // on OMDb's free tier. Falls back to TMDB's own score if OMDb has no
-      // match or no rating for this title.
-      voteAverage: imdbRating ?? match.voteAverage,
+      voteAverage,
       watchLink: link,
+      ratingSource,
     };
   } catch (err) {
     console.error("recommend: enrichment error for", rec.title, err);
@@ -60,6 +65,7 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       providers: [],
       voteAverage: null,
       watchLink: null,
+      ratingSource: null,
     };
   }
 }
