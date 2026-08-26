@@ -19,7 +19,13 @@ function enforceAngleLength(angle: string): string {
 
 async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecommendation> {
   try {
-    const match = await findBestTVMatch(rec.title);
+    // Independent of each other — OMDb does its own title search, so a
+    // rejected/low-confidence TMDB match shouldn't also cost us a rating.
+    const [match, imdbRating] = await Promise.all([
+      findBestTVMatch(rec.title, rec.year),
+      getImdbRating(rec.title),
+    ]);
+
     if (!match) {
       return {
         ...rec,
@@ -27,16 +33,13 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
         posterPath: null,
         overview: null,
         providers: [],
-        voteAverage: null,
+        voteAverage: imdbRating,
         watchLink: null,
-        ratingSource: null,
+        ratingSource: imdbRating !== null ? "imdb" : null,
       };
     }
 
-    const [{ providers, link }, imdbRating] = await Promise.all([
-      getWatchProviders(match.id),
-      getImdbRating(rec.title),
-    ]);
+    const { providers, link } = await getWatchProviders(match.id);
 
     // IMDb rating (via OMDb) is preferred — it's the more widely recognized
     // source and is present for nearly every title, unlike Rotten Tomatoes

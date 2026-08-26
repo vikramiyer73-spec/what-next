@@ -95,23 +95,78 @@ async function findSeasonPoster(showId: number, normalizedQuery: string): Promis
   return season?.poster_path ?? null;
 }
 
-/** Finds the closest TMDB match for a Claude-recommended title. */
-export async function findBestTVMatch(title: string): Promise<TMDBMatch | null> {
+function levenshteinDistance(a: string, b: string): number {
+  const dp: number[][] = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+/** 1 = identical strings, 0 = nothing in common. */
+function titleSimilarity(a: string, b: string): number {
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 1;
+  return 1 - levenshteinDistance(a, b) / maxLen;
+}
+
+/**
+ * Below this, a non-exact top search result is more likely an unrelated show
+ * than a fuzzy variant of the query (typo, punctuation, subtitle) — reject it
+ * rather than silently rendering the wrong show's poster/synopsis/rating.
+ */
+const FUZZY_MATCH_MIN_SIMILARITY = 0.5;
+
+function isConfidentFuzzyMatch(query: string, candidate: string): boolean {
+  return candidate.includes(query) || query.includes(candidate) || titleSimilarity(query, candidate) >= FUZZY_MATCH_MIN_SIMILARITY;
+}
+
+/**
+ * Finds the closest TMDB match for a Claude-recommended title.
+ *
+ * `year`, if given, is Claude's own stated release year for the recommendation
+ * (not parsed from the title string) — used only to disambiguate between
+ * multiple exact title matches (remakes, same-named shows).
+ */
+export async function findBestTVMatch(title: string, year?: string): Promise<TMDBMatch | null> {
   const results = await searchTVShows(title);
-  if (results.length === 0) return null;
+  if (results.length === 0) {
+    console.warn(`tmdb: no search results at all for "${title}"`);
+    return null;
+  }
 
   const normalizedQuery = title.trim().toLowerCase();
-  const yearMatch = title.match(/\b(19|20)\d{2}\b/);
-  const impliedYear = yearMatch ? yearMatch[0] : null;
+  const normalizedYear = year && /^(19|20)\d{2}$/.test(year) ? year : undefined;
 
   const exactMatches = results.filter((r) => r.title.toLowerCase() === normalizedQuery);
 
   let best: ShowSummary;
   if (exactMatches.length > 0) {
-    const yearFiltered = impliedYear ? exactMatches.find((r) => r.year === impliedYear) : undefined;
+    const yearFiltered = normalizedYear ? exactMatches.find((r) => r.year === normalizedYear) : undefined;
     best = yearFiltered ?? exactMatches[0];
+    if (exactMatches.length > 1 && !yearFiltered) {
+      console.warn(
+        `tmdb: ${exactMatches.length} exact title matches for "${title}"${
+          normalizedYear ? ` (none matched year ${normalizedYear})` : " (no year given to disambiguate)"
+        } — used id ${best.id}`,
+      );
+    }
   } else {
-    best = results[0];
+    const candidate = results[0];
+    if (!isConfidentFuzzyMatch(normalizedQuery, candidate.title.toLowerCase())) {
+      console.warn(
+        `tmdb: rejected low-confidence match for "${title}" — closest result was "${candidate.title}" (id ${candidate.id})`,
+      );
+      return null;
+    }
+    best = candidate;
     console.warn(
       `tmdb: fuzzy match for "${title}" -> "${best.title}" (id ${best.id}, no exact title match found)`,
     );

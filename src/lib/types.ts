@@ -20,6 +20,7 @@ export interface Recommendation {
   angle: string;
   title: string;
   reason: string;
+  year?: string;
 }
 
 export interface EnrichedRecommendation extends Recommendation {

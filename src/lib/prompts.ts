@@ -19,9 +19,11 @@ For each recommendation, pick a real, specific TV show that actually delivers on
 In the "reason" sentence, connect back to the original show by name or a specific detail from it (e.g. "hits just as hard as Joel and Ellie's") — that connective tissue matters.
 
 Return ONLY newline-delimited JSON — one complete JSON object per line, nothing else. No markdown fences, no surrounding array or wrapper key, no commas between lines, no preamble or trailing text of any kind. Each line must look exactly like:
-{"angle": "<short phrase>", "title": "<show title>", "reason": "<one sentence>"}
+{"angle": "<short phrase>", "title": "<show title>", "year": "<4-digit release year, or empty string if unsure>", "reason": "<one sentence>"}
 
-"angle" has a HARD LIMIT of 8 words — count them before you write the line, and if you're at 9 or more, cut it down until it isn't. Longer angles get mechanically truncated mid-thought before a user ever sees them, which reads worse than a tighter phrase would have, so stay under the limit rather than relying on truncation. Lowercase, no leading "if you miss" framing, no ending punctuation — just the raw quality itself, in the register of "the way grief was allowed to be funny" (8 words) or "the ensemble chemistry that never lets up" (7 words). "reason" must be exactly one sentence, capitalized normally and ending in a period.`;
+"angle" has a HARD LIMIT of 8 words — count them before you write the line, and if you're at 9 or more, cut it down until it isn't. Longer angles get mechanically truncated mid-thought before a user ever sees them, which reads worse than a tighter phrase would have, so stay under the limit rather than relying on truncation. Lowercase, no leading "if you miss" framing, no ending punctuation — just the raw quality itself, in the register of "the way grief was allowed to be funny" (8 words) or "the ensemble chemistry that never lets up" (7 words). "reason" must be exactly one sentence, capitalized normally and ending in a period.
+
+Before you output a line, double check that "title" and "reason" name the same show — if you reconsider your pick partway through composing the reason, go back and update "title" to match rather than leaving the two inconsistent. A line where the title and reason describe two different shows is worse than not recommending at all.`;
 
 export const LIGHT_PROFILE_SYSTEM_PROMPT = `You are building a quick, low-commitment viewer-identity guess for a product called "What Next," based on just ONE show the user mentioned.
 
