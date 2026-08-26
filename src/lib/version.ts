@@ -1,5 +1,5 @@
-export const APP_VERSION = "v11";
+export const APP_VERSION = "v12";
 
 export const APP_VERSION_CHANGES = [
-  "search input placeholder text updated to 'Enter a show: e.g. The Wire'",
+  "show rating now pulled from IMDb (via OMDb) when available, falling back to TMDB's score",
 ];

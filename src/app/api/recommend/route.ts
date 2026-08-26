@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { streamClaudeJSONL, parseJSONLLine } from "@/lib/anthropic";
 import { RECOMMEND_SYSTEM_PROMPT } from "@/lib/prompts";
 import { findBestTVMatch, getWatchProviders } from "@/lib/tmdb";
+import { getImdbRating } from "@/lib/omdb";
 import { EnrichedRecommendation, Recommendation } from "@/lib/types";
 
 // Target is ~8 words per the prompt — prompting alone hasn't reliably held
@@ -31,7 +32,10 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       };
     }
 
-    const { providers, link } = await getWatchProviders(match.id);
+    const [{ providers, link }, imdbRating] = await Promise.all([
+      getWatchProviders(match.id),
+      getImdbRating(rec.title),
+    ]);
 
     return {
       ...rec,
@@ -39,7 +43,11 @@ async function enrichRecommendation(rec: Recommendation): Promise<EnrichedRecomm
       posterPath: match.posterPath,
       overview: match.overview,
       providers,
-      voteAverage: match.voteAverage,
+      // IMDb rating (via OMDb) is preferred — it's the more widely recognized
+      // source and is present for nearly every title, unlike Rotten Tomatoes
+      // on OMDb's free tier. Falls back to TMDB's own score if OMDb has no
+      // match or no rating for this title.
+      voteAverage: imdbRating ?? match.voteAverage,
       watchLink: link,
     };
   } catch (err) {
